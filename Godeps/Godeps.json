@@ -1,0 +1,10 @@
+{
+	"ImportPath": "github.com/jedisct1/whatmyresolver",
+	"GoVersion": "go1.5.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/miekg/dns",
+			"Rev": "aed88e096f2e341f40f4054f0af119659b8d8e58"
+		}
+	]
+}
