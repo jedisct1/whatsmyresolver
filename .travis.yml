@@ -1,5 +1,13 @@
+sudo: false
+
 language: go
 
 go:
-  - 1.6
+  - 1.7.3
   - tip
+
+script:
+  - echo $TRAVIS_GO_VERSION
+  - go get -v github.com/Masterminds/glide
+  - glide install
+  - go clean
