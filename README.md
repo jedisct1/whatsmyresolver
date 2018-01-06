@@ -1,6 +1,6 @@
 # whatmyresolver
 
-This is the source code of the `resolver.dnscrypt.org` service.
+This is the source code of the `resolver.00f.net` service.
 
 It responds to DNS queries with the client (resolver) IP address.
 
@@ -8,7 +8,7 @@ Public demo API
 ---------------
 
 ```bash
-$ dig +short resolver.dnscrypt.org
+$ dig +short resolver.00f.net
 74.125.181.207
 ```
 -> Aww crap, this VPN service is actually sending DNS queries to Google.
