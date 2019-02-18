@@ -3,8 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.9.2
-  - tip
+  - 1.x
 
 script:
   - echo $TRAVIS_GO_VERSION
