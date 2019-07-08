@@ -8,7 +8,7 @@ Public demo API
 ---------------
 
 ```bash
-$ dig +short resolver.00f.net
+$ dig +short resolver.dnscrypt.info
 74.125.181.207
 ```
 -> Aww crap, this VPN service is actually sending DNS queries to Google.
