@@ -55,6 +55,27 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 		rr.Hdr = dns.RR_Header{Name: question.Name, Rrtype: question.Qtype,
 			Class: dns.ClassINET, Ttl: 10}
 		rr.Txt = []string{fmt.Sprintf("Resolver IP: %v", remoteIP.String())}
+
+		if edns0 := req.IsEdns0(); edns0 != nil {
+			for _, option := range edns0.Option {
+				optionId := option.Option()
+				if optionId == dns.EDNS0PADDING {
+					ext := option.(*dns.EDNS0_PADDING)
+					paddingLen := len(ext.Padding)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 padding: %v bytes", paddingLen))
+				} else if optionId == dns.EDNS0SUBNET {
+					ext := option.(*dns.EDNS0_SUBNET)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 client subnet: %v", ext.String()))
+				} else if optionId == dns.EDNS0NSID {
+					ext := option.(*dns.EDNS0_NSID)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 nsid: %v", ext.Nsid))
+				} else if optionId == dns.EDNS0COOKIE {
+					ext := option.(*dns.EDNS0_COOKIE)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 cookie: %v", ext.Cookie))
+				}
+			}
+		}
+
 		m.Answer = []dns.RR{rr}
 	}
 	m.Question = req.Question
