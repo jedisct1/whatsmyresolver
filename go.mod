@@ -2,7 +2,7 @@ module github.com/jedisct1/whatsmyresolver
 
 go 1.20
 
-require github.com/miekg/dns v1.1.51
+require github.com/miekg/dns v1.1.53
 
 require (
 	golang.org/x/mod v0.7.0 // indirect
