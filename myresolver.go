@@ -58,7 +58,26 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 			Class: dns.ClassINET, Ttl: 10}
 		rr.Txt = []string{fmt.Sprintf("Resolver IP: %v", remoteIP.String())}
 
+		// Report DNS flags
+		if req.AuthenticatedData {
+			rr.Txt = append(rr.Txt, "AD flag set (Authenticated Data)")
+		}
+		if req.CheckingDisabled {
+			rr.Txt = append(rr.Txt, "CD flag set (Checking Disabled)")
+		}
+		if req.RecursionDesired {
+			rr.Txt = append(rr.Txt, "RD flag set (Recursion Desired)")
+		}
+
 		if edns0 := req.IsEdns0(); edns0 != nil {
+			// Report DNSSEC OK bit
+			if edns0.Do() {
+				rr.Txt = append(rr.Txt, "DNSSEC OK (DO bit set)")
+			}
+
+			// Report EDNS0 buffer size
+			rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 UDP buffer size: %d", edns0.UDPSize()))
+
 			for _, option := range edns0.Option {
 				switch option.Option() {
 				case dns.EDNS0PADDING:
@@ -74,6 +93,36 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 				case dns.EDNS0COOKIE:
 					ext := option.(*dns.EDNS0_COOKIE)
 					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 cookie: %v", ext.Cookie))
+				case dns.EDNS0TCPKEEPALIVE:
+					ext := option.(*dns.EDNS0_TCP_KEEPALIVE)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 TCP keepalive: timeout=%d, length=%d", ext.Timeout, ext.Length))
+				case dns.EDNS0EXPIRE:
+					ext := option.(*dns.EDNS0_EXPIRE)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 expire: %d", ext.Expire))
+				case dns.EDNS0DAU:
+					ext := option.(*dns.EDNS0_DAU)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 DNSSEC algorithms understood: %v", ext.AlgCode))
+				case dns.EDNS0DHU:
+					ext := option.(*dns.EDNS0_DHU)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 DS hash understood: %v", ext.AlgCode))
+				case dns.EDNS0N3U:
+					ext := option.(*dns.EDNS0_N3U)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 NSEC3 hash understood: %v", ext.AlgCode))
+				case dns.EDNS0EDE:
+					ext := option.(*dns.EDNS0_EDE)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 extended DNS error: code=%d, info=%s", ext.InfoCode, ext.ExtraText))
+				case dns.EDNS0ESU:
+					ext := option.(*dns.EDNS0_ESU)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 ENUM source-URI: %s", ext.Uri))
+				case dns.EDNS0LLQ:
+					ext := option.(*dns.EDNS0_LLQ)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 long lived query: version=%d, opcode=%d", ext.Version, ext.Opcode))
+				case dns.EDNS0UL:
+					ext := option.(*dns.EDNS0_UL)
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 update lease: lease=%d", ext.Lease))
+				default:
+					// Report unknown EDNS0 options
+					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 unknown option: code=%d", option.Option()))
 				}
 			}
 		}
