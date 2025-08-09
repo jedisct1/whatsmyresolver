@@ -16,7 +16,9 @@ var (
 func failWithRcode(w dns.ResponseWriter, r *dns.Msg, rCode int) {
 	m := new(dns.Msg)
 	m.SetRcode(r, rCode)
-	w.WriteMsg(m)
+	if err := w.WriteMsg(m); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 func route(w dns.ResponseWriter, req *dns.Msg) {
@@ -58,18 +60,18 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 
 		if edns0 := req.IsEdns0(); edns0 != nil {
 			for _, option := range edns0.Option {
-				optionId := option.Option()
-				if optionId == dns.EDNS0PADDING {
+				switch option.Option() {
+				case dns.EDNS0PADDING:
 					ext := option.(*dns.EDNS0_PADDING)
 					paddingLen := len(ext.Padding)
 					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 padding: %v bytes", paddingLen))
-				} else if optionId == dns.EDNS0SUBNET {
+				case dns.EDNS0SUBNET:
 					ext := option.(*dns.EDNS0_SUBNET)
 					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 client subnet: %v", ext.String()))
-				} else if optionId == dns.EDNS0NSID {
+				case dns.EDNS0NSID:
 					ext := option.(*dns.EDNS0_NSID)
 					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 nsid: %v", ext.Nsid))
-				} else if optionId == dns.EDNS0COOKIE {
+				case dns.EDNS0COOKIE:
 					ext := option.(*dns.EDNS0_COOKIE)
 					rr.Txt = append(rr.Txt, fmt.Sprintf("EDNS0 cookie: %v", ext.Cookie))
 				}
@@ -81,7 +83,9 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 	m.Question = req.Question
 	m.Response = true
 	m.Authoritative = true
-	w.WriteMsg(m)
+	if err := w.WriteMsg(m); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 func main() {
@@ -100,5 +104,7 @@ func main() {
 	}
 	udpServer.PacketConn = udpPacketConn
 	fmt.Println("Ready")
-	udpServer.ActivateAndServe()
+	if err := udpServer.ActivateAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
