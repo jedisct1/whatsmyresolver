@@ -1,4 +1,4 @@
-# whatmyresolver
+# whatsmyresolver
 
 This is the source code of the `resolver.00f.net` service.
 
