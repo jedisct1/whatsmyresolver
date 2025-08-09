@@ -28,8 +28,15 @@ Installation
 ------------
 
 ```bash
-$ go get github.com/jedisct1/whatsmyresolver
-# myresolver -listen <myresolver ip address>:53
+$ go install github.com/jedisct1/whatsmyresolver/cmd/whatsmyresolver@latest
+```
+
+Or build from source:
+```bash
+$ git clone https://github.com/jedisct1/whatsmyresolver
+$ cd whatsmyresolver
+$ go build -o whatsmyresolver ./cmd/whatsmyresolver
+$ ./whatsmyresolver -listen <myresolver ip address>:53
 ```
 
 And delegate a zone to this IP:
